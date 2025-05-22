@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin'  # 'termurin' → 'temurin' (correct spelling)
+          distribution: 'temurin'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -31,10 +31,10 @@ jobs:
 
       - name: Run Spring Boot application
         run: |
-          java -jar ./build/libs/massai_mara_park-0.0.1-SNAPSHOT.jar & 
+          java -jar ./build/libs/massai_mara_park-0.0.1-SNAPSHOT.jar &
           sleep 30
 
-- name: Run automated test #1
+      - name: Run automated test #1
         run: |
           curl http://localhost:8080 || exit 1
 
@@ -44,4 +44,4 @@ jobs:
 
       - name: Run automated test #3
         run: |
-          curl http://localhost:8080 || exit 1           
+          curl http://localhost:8080 || exit 1
