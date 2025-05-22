@@ -1,5 +1,3 @@
-vi   ~/dockerfile/nginx/Dockerfile
-
 FROM    alpine
 RUN   apk   --update    add    nginx    &&  \
             rm  -rf   /var/cache/apk/*
