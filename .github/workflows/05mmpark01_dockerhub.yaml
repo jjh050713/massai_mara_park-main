@@ -1,0 +1,28 @@
+name: massai mara park 01 dockerhub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  mmpark01_dockerhub:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: login to docker hub
+        run: docker/login-action@v3
+        with:
+            username: ${{secrets.DOCKER_USERNAME}}
+            password: ${{secrets.DOCKER_PASSWORD}}
+
+      - name: docker operations
+        run: 
+            docker build -t ${{secrets.DOCKER_USERNAME}}/massai_mara:v1
+            docker build -t ${{secrets.DOCKER_PASSWORD}}/massai_mara:v1
+
+
+      - name: logout from docker hub
+        if: always()
+        run: docker logout

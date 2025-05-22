@@ -27,14 +27,14 @@ jobs:
       - name: Run Automated Test #1
         run: |
           echo "Running Test 1"
-          curl --fail http://localhost:8080
+          curl -v --fail http://localhost:8080
 
       - name: Run Automated Test #2
         run: |
           echo "Running Test 2"
-          curl --fail http://localhost:8080
+          curl -v --fail http://localhost:8080
 
       - name: Run Automated Test #3
         run: |
           echo "Running Test 3"
-          curl --fail http://localhost:8080
+          curl -v --fail http://localhost:8080
