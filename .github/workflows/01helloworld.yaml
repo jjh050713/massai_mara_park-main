@@ -4,9 +4,7 @@ on:
     workflow_dispatch
 
 jobs:
-    hello-world;
-    runs-on: ubuntu-latest
-    test:
+    hello-world:
         runs-on: ubuntu-22.04
         steps:
             - name: print hello message
