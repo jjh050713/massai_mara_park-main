@@ -1,0 +1,59 @@
+ name: Test EC2 Connection with GHA
+
+on:
+  workflow_dispatch
+
+env:
+  EC2_HOSTNAME: 43.203.242.153  EC2_USERNAME: ubuntu
+
+jobs:
+  test-ec2-connect:
+    name: test ec2 connection
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: setup  SSH Directory
+        run: |
+          mkdir -p  ~/.ssh
+          chmod 700 ~/.ssh
+
+      - name: make private key file
+        run: |
+          echo "${{ secrets.EC2_PRIVATEKEY }}" > ~/.ssh/ec2_key
+          chmod  600  ~/.ssh/ec2_key
+
+      - name: test SSH connect to EC2
+
+        run: |
+          echo "SSH 연결 테스트 시작..."
+
+          ssh -vvv -o StrictHostKeyChecking=no \
+            -o "UserKnownHostsFile=/dev/null" \ 
+            -i ~/.ssh/ec2_key -p 12137 \
+            ${{env.EC2_USERNAME}}@${{env.EC2_HOSTNAME}}   '
+
+              echo "현재사용자: $(whoami)"
+              echo "호스트명: $(hostname)"
+              echo "현재시간: $(date)"
+              echo "메모리사용량"
+              free -h
+            
+            '
+
+          echo "SSH 연결 테스트 종료..."
+
+
+      - name: upload README.md via SCP
+        run: |
+          echo "Hello, EC2 SCP" > README.md
+
+          scp -i ~/.ssh/ec2_key \
+          -o "StrictHostKeyChecking=no" \
+          -o "UserKnownHostsFile=/dev/null" \
+          -P 12137  README.md  \
+          ${{env.EC2_USERNAME}}@${{env.EC2_HOSTNAME}}:~/
+          
+      - name: cleanup private key
+        if: always()
+        run: |
+          rm -f ~/.ssh/ec2_key
