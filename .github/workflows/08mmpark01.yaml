@@ -36,7 +36,7 @@ jobs:
               echo "현재 시간: $(date)"
               echo "메모리 사용량:"
               free -h
-EOF
+          EOF
 
           echo "SSH 연결 테스트 종료..."
 
