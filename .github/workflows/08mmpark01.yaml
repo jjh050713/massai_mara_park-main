@@ -29,7 +29,7 @@ jobs:
 
           ssh -vvv -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            -i ~/.ssh/ec2_key -p 12137 \
+            -i ~/.ssh/ec2_key -p 22 \
             ${{ env.EC2_USERNAME }}@${{ env.EC2_HOSTNAME }} << 'EOF'
               echo "현재 사용자: $(whoami)"
               echo "호스트명: $(hostname)"
@@ -47,7 +47,7 @@ jobs:
           scp -i ~/.ssh/ec2_key \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            -P 12137 README.md \
+            -P 22 README.md \
             ${{ env.EC2_USERNAME }}@${{ env.EC2_HOSTNAME }}:~/
 
       - name: Cleanup Private Key
