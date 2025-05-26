@@ -16,3 +16,5 @@ RUN gradle bootJar --no-daemon -x test
 FROM amazoncorretto:17
 
 WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
