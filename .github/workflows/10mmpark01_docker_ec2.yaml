@@ -6,7 +6,7 @@ on:
 env:
   DOCKER_USERNAME: jjh050713
   IMAGE_NAME: massai_mara
-  IMAGE_TAG: v${{ github.run_number }} 
+  IMAGE_TAG: v${{ github.run_number }}
   HOSTNAME: 43.203.242.153
   USERNAME: ubuntu
 
@@ -17,8 +17,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
-      # arm64 에뮬레이션 - QEmu
+
       - name: setup QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -37,12 +36,10 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: check image
-        run: |
-          docker image ls
+        run: docker image ls
 
       - name: save docker image
-        run: |
-          docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} > image.tar   
+        run: docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} > image.tar
 
       - name: Upload image artifact
         uses: actions/upload-artifact@v4
@@ -50,13 +47,12 @@ jobs:
           name: docker-image
           path: image.tar
 
-
   hub_push:
     needs: build_image
     runs-on: ubuntu-22.04
 
     steps:
-      - name: download JAR artifact
+      - name: download image artifact
         uses: actions/download-artifact@v4
         with:
           name: docker-image
@@ -65,52 +61,46 @@ jobs:
         run: ls -al
 
       - name: load docker image
-        run: |
-          docker load < image.tar
-      
+        run: docker load < image.tar
+
       - name: login to docker hub
         uses: docker/login-action@v3
         with:
-          username: ${{ env.DOCKER_USERNAME }} 
+          username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: docker operations
-        run: |       
-          docker  push  ${{env.DOCKER_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
-          docker  tag   ${{env.DOCKER_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}} \
-              ${{env.DOCKER_USERNAME}}/${{env.IMAGE_NAME}}:latest
-          docker  push  ${{env.DOCKER_USERNAME}}/${{env.IMAGE_NAME}}:latest
-          docker  search    ${{env.IMAGE_NAME}}:latest
 
+      - name: docker operations
+        run: |
+          docker push ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          docker tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          docker search ${{ env.IMAGE_NAME }}:latest
 
       - name: logout from docker hub
         if: always()
-        run: docker logout    
-
+        run: docker logout
 
   upload_compose:
-    needs: compose
+    needs: hub_push
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: deploy on EC2
-        uses: applyboy/ssh-action@master
-        with: 
-        run: 
-        uses: applboy/scp-action@master
+      - name: copy file to EC2
+        uses: appleboy/scp-action@master
         with:
-          host: ${{ env.HOSTNAME}}
-          username: ${{ env.USERNAME}}
-          key:${{ secrets.EC2_PRIVATEKEY }}
+          host: ${{ env.HOSTNAME }}
+          username: ${{ env.USERNAME }}
+          key: ${{ secrets.EC2_PRIVATEKEY }}
           port: 22
           source: "compose-multijobs.yaml"
-          target: "/home/${{ env.USERNAME}}""
-
-
+          target: "/home/${{ env.USERNAME }}"
 
   run_test:
-    needs: hub_push
+    needs: upload_compose
     runs-on: ubuntu-22.04
 
     steps:
@@ -119,21 +109,19 @@ jobs:
 
       - name: run with docker compose
         run: |
-          docker compose -f ./compose-multijobs.yaml up -d  
+          docker compose -f ./compose-multijobs.yaml up -d
           sleep 30
-          
           docker compose ps
           docker compose logs
-          
 
       - name: run automated test #1
         run: |
-          curl  http://localhost:8080   ||   exit  1   
+          curl http://localhost:8080 || exit 1
 
       - name: run automated test #2
         run: |
-          curl  http://localhost:8080/images   ||   exit  1   
-          
+          curl http://localhost:8080/images || exit 1
+
       - name: run automated test #3
         run: |
-          curl  http://localhost:8080/animal   ||   exit  1   
+          curl http://localhost:8080/animal || exit 1
