@@ -4,7 +4,7 @@ on:
   workflow_dispatch
 
 env:
-  DOCKER_USERNAME: siestageek
+  DOCKER_USERNAME: jjh050713
   IMAGE_NAME: massai_mara
   IMAGE_TAG: v${{ github.run_number }}
   HOSTNAME: 13.125.218.128
@@ -116,7 +116,7 @@ jobs:
           port: 22
           script: |
             docker compose -f ./compose-multijobs.yaml down
-            docker image rm -f siestageek/massai_mara
+            docker image rm -f jjh050713/massai_mara
             docker compose -f ./compose-multijobs.yaml up -d
 
             sleep 15
